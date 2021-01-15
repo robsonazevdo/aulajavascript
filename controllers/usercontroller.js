@@ -46,23 +46,13 @@ class UserController {
                         result._photo = content;
                     }
 
-                    tr.dataset.user = JSON.stringify(result);
+                    let user = new User();
 
-                    tr.innerHTML = `
-                        <td>
-                            <img src="${result._photo}" alt="User Image" class="img-circle img-sm"></td>
-                            <td>${result._name}</td>
-                            <td>${result._email}</td>
-                            <td>${(result._admin)? 'SIM' : 'NÃO'}</td>
-                            <td>${Utils.dateFormat(result._register)}</td>
-                            <td>
-                                <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat" >Editar</button >
-                                <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
-                        </td>
-        
-                `;
+                    user.loadFromJSON(result);
 
-                    this.addEventsTr(tr);
+                    user.save();
+
+                    this.getTr(user, tr);
 
                     this.upDateCount();
 
@@ -102,7 +92,7 @@ class UserController {
 
                     values.photo = content;
 
-                    this.insert(values);
+                    values.save();
 
                     this.addLine(values);
 
@@ -216,13 +206,14 @@ class UserController {
 
         let users = [];
 
-        if (sessionStorage.getItem("users")) {
+        if (localStorage.getItem("users")) {
 
-            users = JSON.parse(sessionStorage.getItem("users"));
+            users = JSON.parse(localStorage.getItem("users"));
 
         }
 
         return users;
+
 
     }
 
@@ -242,39 +233,38 @@ class UserController {
 
     }
 
-    insert(data) {
-
-        let users = this.getUsersStorage();
-
-        users.push(data);
-
-        sessionStorage.setItem("users", JSON.stringify(users));
-
-    }
-
     addLine(dataUser) {
 
-        let tr = document.createElement('tr');
+        let tr = this.getTr(dataUser);
 
-        tr.dataset.user = JSON.stringify(dataUser);
-
-        tr.innerHTML = `
-            <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
-            <td>${dataUser.name}</td>
-            <td>${dataUser.email}</td>
-            <td>${(dataUser.admin)? 'SIM' : 'NÃO'}</td>
-            <td>${Utils.dateFormat(dataUser.register)}</td>
-            <td>
-                <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat" >Editar</button >
-                <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
-            </td>
-        `;
-
-        this.addEventsTr(tr);
 
         this.tableEl.appendChild(tr);
 
         this.upDateCount();
+    }
+
+    getTr(dataUser, tr = null) {
+
+        if (tr === null) tr = document.createElement('tr');
+
+        tr.dataset.user = JSON.stringify(dataUser);
+
+        tr.innerHTML = `
+        <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
+        <td>${dataUser.name}</td>
+        <td>${dataUser.email}</td>
+        <td>${(dataUser.admin)? 'SIM' : 'NÃO'}</td>
+        <td>${Utils.dateFormat(dataUser.register)}</td>
+        <td>
+            <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat" >Editar</button >
+            <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
+        </td>
+    `;
+
+        this.addEventsTr(tr);
+
+        return tr;
+
     }
 
     addEventsTr(tr) {
